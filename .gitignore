@@ -2,7 +2,7 @@
 .venv313/
 __pycache__/
 *.pyc
-.codex/
+.codex
 .env
 *.egg-info/
 frontend/.next/
