@@ -4,8 +4,10 @@ __pycache__/
 *.pyc
 .codex/
 .env
+*.egg-info/
 frontend/.next/
 frontend/out/
 frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
 downloads/
 backend/app/static/
