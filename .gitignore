@@ -1,0 +1,11 @@
+.venv/
+.venv313/
+__pycache__/
+*.pyc
+.codex/
+.env
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+downloads/
+backend/app/static/
