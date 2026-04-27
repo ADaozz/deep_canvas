@@ -21,6 +21,7 @@ Deep Agents 可视化工作流搭建器。
 ## 当前支持
 
 - 通过画布搭建 `Supervisor / Subagent / Tool` 工作流
+- 通过自然语言 query 智能生成工作流节点、绑定关系和中文 prompt
 - 编辑总控、子智能体、工具、中间件、持久化配置
 - 自动生成中文 prompt、节点配置和模板骨架
 - 生成 Deep Agents 项目代码模板，并打包成 zip 下载
