@@ -47,6 +47,7 @@ export function WorkflowConsole() {
     () => supervisors.find((item) => item.id === selectedSupervisorId) ?? null,
     [selectedSupervisorId, supervisors]
   );
+  const showInspector = inspectorMode !== "node" || Boolean(selection);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-text">
@@ -109,8 +110,9 @@ export function WorkflowConsole() {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-4 right-4 top-24 z-30 flex w-[430px]">
-        <div className="pointer-events-auto flex h-full w-full flex-col overflow-hidden rounded-[30px] border border-border/80 bg-panel/88 shadow-2xl backdrop-blur">
+      {showInspector ? (
+        <div className="pointer-events-none absolute bottom-4 right-4 top-24 z-30 flex w-[430px]">
+          <div className="pointer-events-auto flex h-full w-full flex-col overflow-hidden rounded-[30px] border border-border/80 bg-panel/88 shadow-2xl backdrop-blur">
           <div className="flex items-center justify-between border-b border-border/80 px-4 py-3">
             <div>
               <div className="text-[11px] uppercase tracking-[0.2em] text-muted">Inspector</div>
@@ -166,7 +168,8 @@ export function WorkflowConsole() {
             )}
           </div>
         </div>
-      </div>
+        </div>
+      ) : null}
 
       <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2">
         <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-border/80 bg-panel/86 px-3 py-2 text-xs text-muted shadow-lg backdrop-blur">

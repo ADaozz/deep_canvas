@@ -24,6 +24,7 @@ export function SharedWorkflowNode({ data }: { data: WorkflowNodeData }) {
       onClick={() => setSelection({ kind: data.kind, id: data.entityId })}
       className={cn(
         "group relative min-w-[220px] max-w-[260px] rounded-2xl border bg-panel/95 p-4 shadow-lg transition",
+        data.selected && "workflow-node-drag",
         data.selected && "border-blue-400 shadow-glow",
         !data.selected && "border-border hover:border-blue-500/40",
         data.highlighted && "ring-2 ring-teal-400/40",
@@ -89,7 +90,7 @@ export function SharedWorkflowNode({ data }: { data: WorkflowNodeData }) {
                   event.stopPropagation();
                   setSelection({ kind: "middleware", id: middleware.id });
                 }}
-                className="rounded-full border border-border bg-white/5 px-2 py-1 text-[11px] text-slate-200"
+                className="nodrag rounded-full border border-border bg-white/5 px-2 py-1 text-[11px] text-slate-200"
               >
                 {middleware.name}
               </button>
@@ -127,7 +128,7 @@ export function SharedWorkflowNode({ data }: { data: WorkflowNodeData }) {
                         event.stopPropagation();
                         setSelection({ kind: "tool", id: tool.id });
                       }}
-                      className="min-w-0 flex-1 text-left"
+                      className="nodrag min-w-0 flex-1 text-left"
                     >
                       <div className="text-sm font-medium text-slate-100">{tool.name}</div>
                       <div className="mt-1 text-[11px] text-muted">
@@ -141,7 +142,7 @@ export function SharedWorkflowNode({ data }: { data: WorkflowNodeData }) {
                         event.stopPropagation();
                         void unbindTool(data.entityId, tool.id);
                       }}
-                      className="shrink-0 px-1 text-base leading-none text-red-200/70 transition hover:text-red-100"
+                      className="nodrag shrink-0 px-1 text-base leading-none text-red-200/70 transition hover:text-red-100"
                       title="解绑工具"
                     >
                       ×

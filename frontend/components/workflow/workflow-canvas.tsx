@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Background,
   BackgroundVariant,
   Connection,
   Controls,
-  MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  SelectionMode,
+  useOnSelectionChange,
   useEdgesState,
   useNodesState,
   type NodeTypes,
@@ -34,6 +35,7 @@ const edgeTypes: EdgeTypes = {
 function CanvasInner() {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const persistTimerRef = useRef<number | null>(null);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
 
   const {
     selectedSupervisorId,
@@ -68,11 +70,23 @@ function CanvasInner() {
         middlewares,
         persistenceProfiles,
         selection,
+        selectedNodeIds,
         layout,
         run,
         runEvents
       }),
-    [layout, middlewares, persistenceProfiles, run, runEvents, selection, subagents, supervisor, tools]
+    [
+      layout,
+      middlewares,
+      persistenceProfiles,
+      run,
+      runEvents,
+      selectedNodeIds,
+      selection,
+      subagents,
+      supervisor,
+      tools
+    ]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(graph.nodes);
@@ -92,6 +106,16 @@ function CanvasInner() {
 
   const handleNodeDragStop = (_event: unknown, node: { id: string; position: { x: number; y: number } }) => {
     setNodePosition(node.id, node.position);
+    persistLater();
+  };
+
+  const handleSelectionDragStop = (
+    _event: unknown,
+    draggedNodes: Array<{ id: string; position: { x: number; y: number } }>
+  ) => {
+    for (const node of draggedNodes) {
+      setNodePosition(node.id, node.position);
+    }
     persistLater();
   };
 
@@ -181,10 +205,40 @@ function CanvasInner() {
 
   const handleNodeClick = (_event: unknown, node: { id: string }) => {
     const [kind, id] = node.id.split(":");
+    setSelectedNodeIds([node.id]);
     if (kind === "supervisor" || kind === "subagent") {
       setSelection({ kind, id });
     }
   };
+
+  const handleSelectionChange = useCallback(
+    ({
+      nodes: selectedNodes
+    }: {
+      nodes: Array<{ id: string }>;
+      edges: Array<{ id: string }>;
+    }) => {
+      const nodeIds = selectedNodes.map((node) => node.id);
+      setSelectedNodeIds(nodeIds);
+
+      if (selectedNodes.length !== 1) {
+        setSelection(null);
+        return;
+      }
+
+      const [kind, id] = selectedNodes[0].id.split(":");
+      if (kind === "supervisor" || kind === "subagent") {
+        setSelection({ kind, id });
+      } else {
+        setSelection(null);
+      }
+    },
+    [setSelection]
+  );
+
+  useOnSelectionChange({
+    onChange: handleSelectionChange
+  });
 
   return (
     <div
@@ -217,26 +271,26 @@ function CanvasInner() {
         nodesDraggable
         nodesConnectable
         elementsSelectable
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
+        panOnDrag={[1, 2]}
+        selectNodesOnDrag={false}
         defaultViewport={graph.viewport ?? getDefaultViewport()}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={handleConnect}
         onNodeClick={handleNodeClick}
         onNodeDragStop={handleNodeDragStop}
+        onSelectionDragStop={handleSelectionDragStop}
         onMoveEnd={(_, viewport) => {
           setViewport(viewport);
           persistLater();
         }}
+        onPaneClick={() => {
+          setSelectedNodeIds([]);
+          setSelection(null);
+        }}
       >
-        <MiniMap
-          pannable
-          zoomable
-          nodeColor={(node) => {
-            if (node.type === "supervisor") return "#3b82f6";
-            if (node.type === "subagent") return "#14b8a6";
-            return "#94a3b8";
-          }}
-        />
         <Controls position="bottom-right" />
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#304054" />
       </ReactFlow>

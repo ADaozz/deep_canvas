@@ -108,6 +108,7 @@ export function buildWorkflowGraph(args: {
   middlewares: MiddlewareDefinition[];
   persistenceProfiles: PersistenceProfile[];
   selection: WorkflowSelection;
+  selectedNodeIds?: string[];
   layout: CanvasLayoutState;
   run: RunRecord | null;
   runEvents: RunEventRecord[];
@@ -119,12 +120,14 @@ export function buildWorkflowGraph(args: {
     middlewares,
     persistenceProfiles,
     selection,
+    selectedNodeIds = [],
     layout,
     run,
     runEvents
   } = args;
   const nodes: Node<WorkflowNodeData>[] = [];
   const edges: Edge<WorkflowEdgeData>[] = [];
+  const selectedNodeIdSet = new Set(selectedNodeIds);
 
   if (!supervisor) {
     return { nodes, edges, viewport: layout.viewport ?? DEFAULT_VIEWPORT };
@@ -138,9 +141,15 @@ export function buildWorkflowGraph(args: {
     persistenceProfiles.find((profile) => profile.id === supervisor.persistence_profile_id) ?? null;
 
   const supervisorNodeId = getNodeId("supervisor", supervisor.id);
+  const supervisorSelected =
+    selectedNodeIdSet.has(supervisorNodeId) ||
+    (selection?.kind === "supervisor" && selection.id === supervisor.id);
   nodes.push({
     id: supervisorNodeId,
     type: "supervisor",
+    dragHandle: supervisorSelected ? ".workflow-node-drag" : undefined,
+    draggable: supervisorSelected,
+    selected: supervisorSelected,
     position: resolvePosition(layout, supervisorNodeId, "supervisor", 0),
     data: {
       kind: "supervisor",
@@ -149,7 +158,7 @@ export function buildWorkflowGraph(args: {
       subtitle: supervisor.runtime.model,
       body: supervisor.runtime.system_prompt,
       countLabel: `${supervisor.subagent_ids.length} 个子智能体`,
-      selected: selection?.kind === "supervisor" && selection.id === supervisor.id,
+      selected: supervisorSelected,
       highlighted: highlightState.names.has(supervisor.name),
       running: highlightState.isRunning,
       warning: !supervisor.enabled || highlightState.isFailed,
@@ -177,9 +186,15 @@ export function buildWorkflowGraph(args: {
       subagent.middleware_ids.includes(middleware.id)
     );
     const subagentNodeId = getNodeId("subagent", subagent.id);
+    const subagentSelected =
+      selectedNodeIdSet.has(subagentNodeId) ||
+      (selection?.kind === "subagent" && selection.id === subagent.id);
     nodes.push({
       id: subagentNodeId,
       type: "subagent",
+      dragHandle: subagentSelected ? ".workflow-node-drag" : undefined,
+      draggable: subagentSelected,
+      selected: subagentSelected,
       position: resolvePosition(layout, subagentNodeId, "subagent", index),
       data: {
         kind: "subagent",
@@ -188,7 +203,7 @@ export function buildWorkflowGraph(args: {
         subtitle: subagent.runtime.model,
         body: subagent.description,
         countLabel: `${subagent.tool_ids.length} 个工具`,
-        selected: selection?.kind === "subagent" && selection.id === subagent.id,
+        selected: subagentSelected,
         highlighted: highlightState.names.has(subagent.name),
         running: highlightState.isRunning,
         warning: !subagent.enabled,

@@ -46,6 +46,10 @@ class Settings(BaseSettings):
         default="qwen3.5-plus",
         validation_alias="DASHSCOPE_MODEL",
     )
+    tavily_api_key: str | None = Field(
+        default=None,
+        validation_alias="TAVILY_API_KEY",
+    )
 
     @model_validator(mode="after")
     def assemble_database_url(self) -> "Settings":
